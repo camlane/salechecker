@@ -1,0 +1,24 @@
+<configuration>
+
+    <statusListener class="ch.qos.logback.core.status.NopStatusListener"/>
+
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <layout class="ch.qos.logback.classic.PatternLayout">
+            <Pattern>
+                %highlight(%-5level) %cyan(%-40logger{28mo}) - %msg%n
+            </Pattern><!--%yellow(%d{HH:mm:ss}) -->
+        </layout>
+    </appender>
+
+    <logger name="org.springframework" level="info"/>
+    <logger name="org.springframework.data.mongodb" level="error"/>
+    <logger name="org.mongodb" level="warn"/>
+    <logger name="org.jsoup" level="info"/>
+    <logger name="reactor" level="info"/>
+    <logger name="org.springframework.web.reactive.function.client.ExchangeFunctions" level="trace"/>
+
+    <root level="info">
+        <appender-ref ref="CONSOLE"/>
+    </root>
+
+</configuration>

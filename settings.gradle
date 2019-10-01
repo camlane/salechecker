@@ -1,0 +1,12 @@
+//pluginManagement {
+//    repositories {
+//        maven { url = uri("https://repo.spring.io/plugins-milestone") }
+//        maven { url = uri("https://repo.spring.io/plugins-snapshot") }
+//        mavenCentral()
+//    }
+//}
+
+rootProject.name = 'salechecker'
+
+
+
