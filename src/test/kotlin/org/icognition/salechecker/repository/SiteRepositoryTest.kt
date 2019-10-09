@@ -1,6 +1,8 @@
 package org.icognition.salechecker.repository
 
+import io.kotlintest.matchers.equality.shouldBeEqualToIgnoringFields
 import org.icognition.salechecker.entity.Site
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import org.springframework.beans.factory.annotation.Autowired
@@ -16,6 +18,11 @@ class SiteRepositoryTest {
   @Autowired
   lateinit var siteRepository: SiteRepository
 
+  @BeforeEach
+  fun setUp() {
+    siteRepository.deleteAll().block()
+  }
+
   @Test
   fun `saved sites are found in the repository`() {
     val site = Site("nike.com", "body > p")
@@ -24,7 +31,8 @@ class SiteRepositoryTest {
     siteRepository.saveAll(Flux.just(site, site2)).subscribe()
 
     StepVerifier.create(siteRepository.findAll())
-        .expectNextCount(2)
+        .assertNext { it.shouldBeEqualToIgnoringFields(site, site::id) }
+        .assertNext { it.shouldBeEqualToIgnoringFields(site2, site2::id) }
         .verifyComplete()
   }
 

@@ -14,7 +14,7 @@ import kotlinx.coroutines.runBlocking
 import org.icognition.salechecker.domain.SiteDocument
 import org.icognition.salechecker.entity.Product
 import org.icognition.salechecker.entity.ScanResult
-import org.icognition.salechecker.entity.ScanResult.ScanStatus.ELEMENT_FOUND
+import org.icognition.salechecker.entity.ScanResult.ScanStatus.ElementFound
 import org.icognition.salechecker.entity.Site
 import org.icognition.salechecker.entity.SiteItem
 import org.icognition.salechecker.http.ReactiveHttpClient
@@ -83,7 +83,7 @@ internal class SiteItemCheckServiceTest {
 
   @Test
   fun `should call generateMailMessage when price has decreased`() {
-    val scanResult = ScanResult(ONE, OK, ELEMENT_FOUND, SITE_ITEM)
+    val scanResult = ScanResult(ONE, OK, ElementFound, SITE_ITEM)
     coEvery {
       siteScanner.scanSite(SiteDocument(SITE_ITEM, SITE_HTML))
     } returns scanResult
@@ -98,7 +98,7 @@ internal class SiteItemCheckServiceTest {
 
   @Test
   fun `should call sendMail when element found and price has decreased`() {
-    val scanResult = ScanResult(ONE, OK, ELEMENT_FOUND, SITE_ITEM)
+    val scanResult = ScanResult(ONE, OK, ElementFound, SITE_ITEM)
     coEvery {
       siteScanner.scanSite(SiteDocument(SITE_ITEM, SITE_HTML))
     } returns scanResult

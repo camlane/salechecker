@@ -9,7 +9,7 @@ import kotlinx.coroutines.flow.map
 import mu.KLogging
 import org.icognition.salechecker.domain.SiteDocument
 import org.icognition.salechecker.entity.ScanResult
-import org.icognition.salechecker.entity.ScanResult.ScanStatus.ELEMENT_FOUND
+import org.icognition.salechecker.entity.ScanResult.ScanStatus.ElementFound
 import org.icognition.salechecker.entity.SiteItem
 import org.icognition.salechecker.http.ReactiveHttpClient
 import org.icognition.salechecker.mail.EmailMessageBuilder
@@ -38,8 +38,7 @@ class SiteCheckService {
   @Autowired
   lateinit var emailMessageBuilder: EmailMessageBuilder
 
-  @FlowPreview
-//  @Scheduled(cron = "0 09 16 * * *")
+  //  @Scheduled(cron = "0 09 16 * * *")
   suspend fun checkSites() {
 
     val siteItems = siteItemRepository.findAllAsFlow()
@@ -66,7 +65,7 @@ class SiteCheckService {
       logger.info { "Selector: $this.siteItem.site.cssSelector" }
     }
 
-    return this.scanStatus == ELEMENT_FOUND
+    return this.scanStatus == ElementFound
   }
 
   private fun ScanResult.priceHasDecreased(): Boolean {

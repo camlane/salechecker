@@ -56,6 +56,8 @@ dependencies {
   testImplementation("org.jetbrains.kotlin", "kotlin-test-common", kotlinVersion)
   testImplementation("org.jetbrains.kotlin", "kotlin-test-annotations-common", kotlinVersion)
   testImplementation("de.flapdoodle.embed", "de.flapdoodle.embed.mongo", "2.2.0")
+  testImplementation("io.kotlintest", "kotlintest-assertions", "3.4.2")
+  testImplementation("io.kotlintest:kotlintest-runner-junit5:3.3.2")
   testRuntimeOnly("org.junit.jupiter", "junit-jupiter-engine", junit5Version)
   testRuntimeOnly("org.junit.platform", "junit-platform-commons", junit5PlatformVersion)
   testRuntimeOnly("org.junit.platform", "junit-platform-launcher", junit5PlatformVersion)

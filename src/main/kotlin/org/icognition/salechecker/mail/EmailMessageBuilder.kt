@@ -10,6 +10,7 @@ import org.springframework.stereotype.Component
 import java.math.BigDecimal
 import java.text.DecimalFormat
 import java.text.DecimalFormatSymbols
+import java.util.*
 
 @Component
 class EmailMessageBuilder {
@@ -38,7 +39,7 @@ class EmailMessageBuilder {
               +"Original Price"
             }
             td {
-              +scanResult.siteItem.originalPrice.format()
+              +scanResult.siteItem.originalPrice.formatAsCurrency()
             }
           }
           tr {
@@ -46,7 +47,7 @@ class EmailMessageBuilder {
               +"Latest Price"
             }
             td {
-              +scanResult.scanPrice!!.format()
+              +scanResult.scanPrice!!.formatAsCurrency()
             }
           }
         }.serialize(false)
@@ -54,9 +55,9 @@ class EmailMessageBuilder {
 
 }
 
-private fun BigDecimal.format(): String {
-  return getCurrencySymbol() + DecimalFormat.getInstance().format(this.toDouble())
-}
+private fun BigDecimal.formatAsCurrency(): String =
+    getCurrencySymbol() + DecimalFormat.getInstance().format(this.toDouble())
+
 
 private fun getCurrencySymbol(): String? =
-    DecimalFormatSymbols.getInstance().currencySymbol
+    DecimalFormatSymbols.getInstance(Locale.UK).currencySymbol

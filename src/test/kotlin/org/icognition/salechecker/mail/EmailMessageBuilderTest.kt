@@ -1,13 +1,14 @@
 package org.icognition.salechecker.mail
 
+import io.kotlintest.shouldBe
 import org.icognition.salechecker.entity.Product
 import org.icognition.salechecker.entity.ScanResult
+import org.icognition.salechecker.entity.ScanResult.ScanStatus.ElementFound
 import org.icognition.salechecker.entity.Site
 import org.icognition.salechecker.entity.SiteItem
 import org.junit.jupiter.api.Test
-import org.springframework.http.HttpStatus
+import org.springframework.http.HttpStatus.OK
 import java.math.BigDecimal
-import kotlin.test.assertEquals
 
 class EmailMessageBuilderTest {
 
@@ -16,16 +17,19 @@ class EmailMessageBuilderTest {
   @Test
   fun `message formats correctly`() {
 
-    val site = Site("Asos", "")
-    val product = Product("Air Max 90", "Nike")
+    val site = Site("Asos", "body > p")
+    val product = Product("Air Max 90")
     val siteItem = SiteItem("http://asos.com?pid=123", BigDecimal("129.95"),
-        product, site, Site.SiteStatus.ACTIVE)
-    val scanResult = ScanResult(BigDecimal("80.95"), HttpStatus.OK,
-        ScanResult.ScanStatus.ELEMENT_FOUND, siteItem)
+        product, site)
+    val scanResult = ScanResult(BigDecimal("80.95"), OK, ElementFound, siteItem)
+
     val result = emailMessageBuilder.generateMailMessage(scanResult)
 
-    assertEquals("<!DOCTYPE html>\n" +
-        "<table><tr><td>Product</td><td>Air Max 90</td></tr><tr><td>Site URL</td><td>http://asos.com?pid=123</td></tr><tr><td>Original Price</td><td>\$129.95</td></tr><tr><td>Latest Price</td><td>\$80.95</td></tr></table>", result)
+    val expected = "<!DOCTYPE html>\n" +
+        "<table><tr><td>Product</td><td>Air Max 90</td></tr><tr><td>Site URL</td><td>http://asos" +
+        ".com?pid=123</td></tr><tr><td>Original Price</td><td>&pound;129.95</td></tr><tr><td>Latest Price</td>" +
+        "<td>&pound;80.95</td></tr></table>"
+    result.shouldBe(expected)
   }
 
 }

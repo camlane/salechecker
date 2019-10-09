@@ -1,7 +1,6 @@
 package org.icognition.salechecker.entity
 
-import org.icognition.salechecker.entity.Site.SiteStatus
-import org.icognition.salechecker.entity.Site.SiteStatus.ACTIVE
+import org.icognition.salechecker.entity.SiteItem.SiteItemStatus.Active
 import org.springframework.data.annotation.Id
 import org.springframework.data.mongodb.core.index.Indexed
 import org.springframework.data.mongodb.core.mapping.DBRef
@@ -14,5 +13,11 @@ data class SiteItem(
     val originalPrice: BigDecimal,
     @DBRef val product: Product,
     @DBRef val site: Site,
-    val status: SiteStatus = ACTIVE,
-    @Id val id: String? = null)
+    val status: SiteItemStatus = Active,
+    @Id val id: String? = null) {
+
+  enum class SiteItemStatus {
+    Active,
+    Inactive
+  }
+}

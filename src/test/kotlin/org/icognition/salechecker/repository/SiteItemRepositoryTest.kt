@@ -1,12 +1,11 @@
 package org.icognition.salechecker.repository
 
-import org.hamcrest.CoreMatchers.startsWith
-import org.hamcrest.MatcherAssert.assertThat
+import io.kotlintest.matchers.equality.shouldBeEqualToIgnoringFields
 import org.icognition.salechecker.entity.Product
 import org.icognition.salechecker.entity.Site
 import org.icognition.salechecker.entity.SiteItem
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.extension.ExtendWith
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
@@ -14,11 +13,12 @@ import org.springframework.test.context.junit.jupiter.SpringExtension
 import reactor.core.publisher.Flux
 import reactor.test.StepVerifier
 import java.math.BigDecimal.ONE
+import kotlin.test.assertFailsWith
 
 @ExtendWith(SpringExtension::class)
 @SpringBootTest
 class SiteItemRepositoryTest {
-
+ 
   @Autowired
   lateinit var siteRepository: SiteRepository
   @Autowired
@@ -26,8 +26,16 @@ class SiteItemRepositoryTest {
   @Autowired
   lateinit var productRepository: ProductRepository
 
+  @BeforeEach
+  fun setUp() {
+    siteRepository.deleteAll().block()
+    productRepository.deleteAll().block()
+    siteItemRepository.deleteAll().block()
+  }
+
   @Test
   fun `saved site items are found in repository`() {
+
     val product = productRepository.save(Product("Nike Air Max")).block()!!
     val site = siteRepository.save(Site("Nike", "body > p")).block()!!
 
@@ -36,7 +44,8 @@ class SiteItemRepositoryTest {
     siteItemRepository.saveAll(Flux.just(siteItem, siteItem1)).subscribe()
 
     StepVerifier.create(siteItemRepository.findAll())
-        .expectNextCount(2)
+        .assertNext { it.shouldBeEqualToIgnoringFields(siteItem, siteItem::id) }
+        .assertNext { it.shouldBeEqualToIgnoringFields(siteItem1, siteItem1::id) }
         .verifyComplete()
   }
 
@@ -47,11 +56,9 @@ class SiteItemRepositoryTest {
     val site = siteRepository.save(Site("Asos", "body > price")).block()!!
 
     siteItemRepository.save(SiteItem("asos.com?pid=1", ONE, product, site)).block()
-    val thrown = assertThrows<Exception> {
+    assertFailsWith(java.lang.Exception::class, "E11000 duplicate key error collection") {
       siteItemRepository.save(SiteItem("asos.com?pid=1", ONE, product, site)).block()
     }
-
-    assertThat(thrown.message, startsWith("E11000 duplicate key error collection"))
   }
 
 

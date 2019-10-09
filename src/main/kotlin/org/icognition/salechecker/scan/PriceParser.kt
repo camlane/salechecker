@@ -8,8 +8,16 @@ import java.util.Locale.UK
 @Component
 class PriceParser {
 
-  fun parse(price: String): BigDecimal = price.stripCurrencyCharacters().toBigDecimal()
-
+  @Throws(InvalidPriceTextException::class)
+  fun parse(price: String): BigDecimal {
+   try {
+     return price
+         .stripCurrencyCharacters()
+         .toBigDecimal()
+   } catch (e: NumberFormatException){
+     throw InvalidPriceTextException(e)
+   }
+  }
 }
 
 private fun String.stripCurrencyCharacters(): String {

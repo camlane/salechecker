@@ -1,42 +1,45 @@
 package org.icognition.salechecker.scan
 
-import org.hamcrest.CoreMatchers.`is`
-import org.hamcrest.MatcherAssert.assertThat
-import org.junit.jupiter.api.BeforeEach
+import io.kotlintest.shouldBe
 import org.junit.jupiter.api.Test
 import java.math.BigDecimal
+import kotlin.test.assertFailsWith
 
-internal class PriceParserTest {
+class PriceParserTest {
 
-  private val priceParser: PriceParser = PriceParser()
+  private val priceParser = PriceParser()
 
-  @BeforeEach
-  fun setUp() {
+  @Test
+  fun `throws exception when not a valid number`() {
+
+    val text = "XXX.XX"
+
+    assertFailsWith<InvalidPriceTextException> { priceParser.parse(text) }
   }
 
   @Test
-  fun `when text contains spaces then parses successfully`() {
+  fun `text with whitespace parses successfully`() {
 
     val text = " 123.45 "
 
     val result = priceParser.parse(text)
-    assertThat(result, `is`(BigDecimal("123.45")))
+    result.shouldBe(BigDecimal("123.45"))
   }
 
   @Test
-  fun `when text contains pound symbol then parses successfully`() {
+  fun `text containing currency symbol parses successfully`() {
     val text = "£123.45"
 
     val result = priceParser.parse(text)
-    assertThat(result, `is`(BigDecimal("123.45")))
+    result.shouldBe(BigDecimal("123.45"))
   }
 
   @Test
-  fun `when text contains GBP then parses successfully`() {
+  fun `text containing currency code parses successfully`() {
     val text = "123.45 GBP"
 
     val result = priceParser.parse(text)
-    assertThat(result, `is`(BigDecimal("123.45")))
+    result.shouldBe(BigDecimal("123.45"))
   }
 
 }

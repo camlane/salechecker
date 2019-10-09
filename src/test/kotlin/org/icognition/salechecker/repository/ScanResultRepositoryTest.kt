@@ -1,9 +1,9 @@
 package org.icognition.salechecker.repository
 
-import org.assertj.core.api.Assertions.assertThat
+import io.kotlintest.shouldBe
 import org.icognition.salechecker.entity.Product
 import org.icognition.salechecker.entity.ScanResult
-import org.icognition.salechecker.entity.ScanResult.ScanStatus.ELEMENT_FOUND
+import org.icognition.salechecker.entity.ScanResult.ScanStatus.ElementFound
 import org.icognition.salechecker.entity.Site
 import org.icognition.salechecker.entity.SiteItem
 import org.junit.jupiter.api.BeforeEach
@@ -23,7 +23,7 @@ import java.math.BigDecimal.TEN
 
 @ExtendWith(SpringExtension::class)
 @SpringBootTest
-internal class ScanResultRepositoryTest {
+class ScanResultRepositoryTest {
 
   @Autowired
   lateinit var productRepository: ProductRepository
@@ -49,10 +49,10 @@ internal class ScanResultRepositoryTest {
     val site = saveSite("Nike", "body > p")
     val siteItem = saveSiteItem(product, site, "nike.com?pid=1", ONE)
 
-    val scanResult = ScanResult(ONE, OK, ELEMENT_FOUND, siteItem)
+    val scanResult = ScanResult(ONE, OK, ElementFound, siteItem)
 
     StepVerifier.create(this.scanResultRepository.save(scanResult))
-        .consumeNextWith { (scanPrice) -> assertThat(scanPrice).isEqualTo(ONE) }
+        .consumeNextWith { (scanPrice) -> scanPrice.shouldBe(ONE) }
         .expectComplete()
         .verify()
   }
@@ -63,13 +63,13 @@ internal class ScanResultRepositoryTest {
     val site = saveSite("asos", "body > p")
     val siteItem = saveSiteItem(product, site, "asos.com?pid=10", ONE)
 
-    val scanResult1 = ScanResult(TEN, OK, ELEMENT_FOUND, siteItem)
-    val scanResult2 = ScanResult(ONE, OK, ELEMENT_FOUND, siteItem)
+    val scanResult1 = ScanResult(TEN, OK, ElementFound, siteItem)
+    val scanResult2 = ScanResult(ONE, OK, ElementFound, siteItem)
 
     val allScanResults = Flux.just(scanResult1, scanResult2)
         .flatMap { result -> scanResultRepository.save(result) }
         .thenMany(scanResultRepository.findByHttpStatusAndScanStatus(OK,
-            ELEMENT_FOUND))
+            ElementFound))
 
     StepVerifier.create(allScanResults)
         .expectNextMatches { (scanPrice) -> scanPrice == TEN }
@@ -84,13 +84,13 @@ internal class ScanResultRepositoryTest {
     val site = saveSite("Adidas", "body > h")
     val siteItem = saveSiteItem(product, site, "adidas.com?pid=1", ONE)
 
-    val scanResult1 = ScanResult(TEN, OK, ScanResult.ScanStatus.ELEMENT_NOT_FOUND, siteItem)
-    val scanResult2 = ScanResult(ONE, OK, ELEMENT_FOUND, siteItem)
+    val scanResult1 = ScanResult(TEN, OK, ScanResult.ScanStatus.ElementNotFound, siteItem)
+    val scanResult2 = ScanResult(ONE, OK, ElementFound, siteItem)
 
     val allScanResults = Flux.just(scanResult1, scanResult2)
         .flatMap { result -> scanResultRepository.save(result) }
         .thenMany(scanResultRepository.findByHttpStatusAndScanStatus(OK,
-            ELEMENT_FOUND))
+            ElementFound))
 
     StepVerifier.create(allScanResults)
         .expectNextMatches { (scanPrice) -> scanPrice == ONE }
@@ -104,13 +104,13 @@ internal class ScanResultRepositoryTest {
     val site = saveSite("Superdry", "body > p")
     val siteItem = saveSiteItem(product, site, "superdry.com?pid=1", ONE)
 
-    val scanResult1 = ScanResult(TEN, OK, ELEMENT_FOUND, siteItem)
-    val scanResult2 = ScanResult(ONE, NOT_FOUND, ELEMENT_FOUND, siteItem)
+    val scanResult1 = ScanResult(TEN, OK, ElementFound, siteItem)
+    val scanResult2 = ScanResult(ONE, NOT_FOUND, ElementFound, siteItem)
 
     val allScanResults = Flux.just(scanResult1, scanResult2)
         .flatMap { result -> scanResultRepository.save(result) }
         .thenMany(scanResultRepository.findByHttpStatusAndScanStatus(OK,
-            ELEMENT_FOUND))
+            ElementFound))
 
     StepVerifier.create(allScanResults)
         .expectNextMatches { (scanPrice) -> scanPrice == TEN }

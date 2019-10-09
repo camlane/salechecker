@@ -9,7 +9,6 @@ import org.jsoup.select.Elements
 import org.springframework.http.HttpStatus.OK
 import org.springframework.stereotype.Component
 import java.math.BigDecimal
-import java.text.ParseException
 
 @Component
 class JsoupSiteScanner(val priceParser: PriceParser) {
@@ -23,18 +22,19 @@ class JsoupSiteScanner(val priceParser: PriceParser) {
 
     val document = Jsoup.parseBodyFragment(siteDocument.siteHtml)
     val elements = document.select(siteItem.site.cssSelector)
-    if (elements.firstElementHasText()) {
-      return scanResult(siteDocument, ELEMENT_NOT_FOUND)
+    if (elements.firstElementTextIsEmpty()) {
+      return scanResult(siteDocument, ElementNotFound)
     }
 
-    val scanPrice =
-        try {
-          priceParser.parse(elements.firstElementText())
-        } catch (e: ParseException) {
-          return scanResult(siteDocument, INVALID_PRICE)
-        }
+    val result = kotlin.runCatching {
+      priceParser.parse(elements.firstElementText())
+    }
 
-    return scanResult(siteDocument, ELEMENT_FOUND, scanPrice)
+    return if (result.isFailure) {
+      scanResult(siteDocument, InvalidPrice)
+    } else {
+      scanResult(siteDocument, ElementFound, result.getOrNull())
+    }
   }
 
   private fun scanResult(siteDocument: SiteDocument,
@@ -47,7 +47,7 @@ class JsoupSiteScanner(val priceParser: PriceParser) {
 
 }
 
-private fun Elements.firstElementHasText(): Boolean =
+private fun Elements.firstElementTextIsEmpty(): Boolean =
     this.isEmpty() || firstElementText().isEmpty()
 
 private fun Elements.firstElementText() = this.first().ownText()

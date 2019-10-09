@@ -1,6 +1,6 @@
 package org.icognition.salechecker.entity
 
-import org.icognition.salechecker.entity.ScanResult.ScanStatus.NONE
+import org.icognition.salechecker.entity.ScanResult.ScanStatus.None
 import org.springframework.data.annotation.CreatedDate
 import org.springframework.data.annotation.Id
 import org.springframework.data.mongodb.core.mapping.DBRef
@@ -13,15 +13,15 @@ import java.time.LocalDateTime
 data class ScanResult(
     val scanPrice: BigDecimal?,
     val httpStatus: HttpStatus,
-    val scanStatus: ScanStatus = NONE,
+    val scanStatus: ScanStatus = None,
     @DBRef val siteItem: SiteItem,
     @CreatedDate val createdDate: LocalDateTime = LocalDateTime.now(),
     @Id val id: String? = null) {
 
   enum class ScanStatus {
-    NONE,
-    ELEMENT_FOUND,
-    ELEMENT_NOT_FOUND,
-    INVALID_PRICE
+    None,
+    ElementFound,
+    ElementNotFound,
+    InvalidPrice
   }
 }

@@ -1,15 +1,12 @@
 package org.icognition.salechecker.scan
 
+import io.kotlintest.shouldBe
 import io.mockk.every
 import io.mockk.impl.annotations.InjectMockKs
 import io.mockk.impl.annotations.MockK
 import io.mockk.junit5.MockKExtension
-import org.hamcrest.CoreMatchers.`is`
-import org.hamcrest.MatcherAssert.assertThat
 import org.icognition.salechecker.domain.SiteDocument
 import org.icognition.salechecker.entity.Product
-import org.icognition.salechecker.entity.ScanResult
-import org.icognition.salechecker.entity.ScanResult.ScanStatus
 import org.icognition.salechecker.entity.ScanResult.ScanStatus.*
 import org.icognition.salechecker.entity.Site
 import org.icognition.salechecker.entity.SiteItem
@@ -17,7 +14,6 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import java.math.BigDecimal
 import java.math.BigDecimal.ONE
-import java.text.ParseException
 
 @ExtendWith(MockKExtension::class)
 class JsoupSiteScannerTest {
@@ -29,23 +25,23 @@ class JsoupSiteScannerTest {
   lateinit var siteScanner: JsoupSiteScanner
 
   @Test
-  fun `when selector does not find a match then scan status is ELEMENT_NOT_FOUND`() {
+  fun `when selector does not find a match then scan status is ElementNotFound`() {
 
     val siteDocument = getSiteDocument("body > xxx", getHtml("100.00"))
 
     val result = siteScanner.scanSite(siteDocument)
-    assertScanStatus(result, ELEMENT_NOT_FOUND)
+    result.scanStatus.shouldBe(ElementNotFound)
   }
 
   @Test
-  fun `when price element found then scan status is ELEMENT_FOUND`() {
+  fun `when price element found then scan status is ElementNotFound`() {
 
     every { priceParser.parse("100.00") } returns BigDecimal("100.00")
 
     val siteDocument = getSiteDocument("body > price", getHtml("100.00"))
 
     val result = siteScanner.scanSite(siteDocument)
-    assertScanStatus(result, ELEMENT_FOUND)
+    result.scanStatus.shouldBe(ElementFound)
   }
 
   @Test
@@ -56,7 +52,7 @@ class JsoupSiteScannerTest {
     val siteDocument = getSiteDocument("body > price", getHtml("123.45"))
 
     val result = siteScanner.scanSite(siteDocument)
-    assertThat(result.scanPrice, `is`(BigDecimal("123.45")))
+    result.scanPrice.shouldBe(BigDecimal("123.45"))
   }
 
   @Test
@@ -67,7 +63,7 @@ class JsoupSiteScannerTest {
     val siteDocument = getSiteDocument("body > price", getHtml("£123.45"))
 
     val result = siteScanner.scanSite(siteDocument)
-    assertThat(result.scanPrice, `is`(BigDecimal("123.45")))
+    result.scanPrice.shouldBe(BigDecimal("123.45"))
   }
 
   @Test
@@ -78,31 +74,29 @@ class JsoupSiteScannerTest {
     every { priceParser.parse("GBP 123.45") } returns BigDecimal("123.45")
 
     val result = siteScanner.scanSite(siteDocument)
-    assertThat(result.scanPrice, `is`(BigDecimal("123.45")))
+    result.scanPrice.shouldBe(BigDecimal("123.45"))
   }
 
   @Test
-  fun `when price element is empty then scan status is ELEMENT_NOT_FOUND`() {
+  fun `when price element is empty then scan status is ElementNotFound`() {
 
     val siteDocument = getSiteDocument("body > price", getHtml(""))
 
     val result = siteScanner.scanSite(siteDocument)
-    assertScanStatus(result, ELEMENT_NOT_FOUND)
+    result.scanStatus.shouldBe(ElementNotFound)
   }
 
   @Test
-  fun `when element price is not valid then scan status is INVALID_PRICE`() {
+  fun `when element price is not valid then scan status is InvalidPrice`() {
 
-    every { priceParser.parse("XXX") } throws ParseException("", 1)
+    every {
+      priceParser.parse("XXX")
+    } throws InvalidPriceTextException(NumberFormatException("Error parsing price"))
 
     val siteDocument = getSiteDocument("body > price", getHtml("XXX"))
 
     val result = siteScanner.scanSite(siteDocument)
-    assertScanStatus(result, INVALID_PRICE)
-  }
-
-  private fun assertScanStatus(result: ScanResult, scanStatus: ScanStatus) {
-    assertThat(result.scanStatus, `is`<ScanStatus>(scanStatus))
+    result.scanStatus.shouldBe(InvalidPrice)
   }
 
   private fun getHtml(price: String): String = "<html><body>" +

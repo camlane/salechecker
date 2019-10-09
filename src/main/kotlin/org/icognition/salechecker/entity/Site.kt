@@ -7,11 +7,4 @@ import org.springframework.data.mongodb.core.mapping.Document
 data class Site (
 		val description: String,
 		val cssSelector: String,
-		@Id val id: String? = null) {
-
-	enum class SiteStatus {
-		ACTIVE,
-		INACTIVE
-	}
-
-}
+		@Id val id: String? = null)

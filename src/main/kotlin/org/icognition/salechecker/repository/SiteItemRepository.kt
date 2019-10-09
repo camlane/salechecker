@@ -2,6 +2,7 @@ package org.icognition.salechecker.repository
 
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.reactive.asFlow
 import org.icognition.salechecker.entity.SiteItem
 import org.springframework.data.repository.reactive.ReactiveCrudRepository
 import org.springframework.stereotype.Component
@@ -11,15 +12,5 @@ import java.util.stream.Collectors
 interface SiteItemRepository : ReactiveCrudRepository<SiteItem, String>
 
 fun SiteItemRepository.findAllAsFlow(): Flow<SiteItem> {
-  return this.findAll()
-      .toStream()
-      .collect(Collectors.toList())
-      .toFlow()
-}
-
-fun List<SiteItem>?.toFlow(): Flow<SiteItem> {
-  val list = this
-  return flow {
-    list!!.forEach { emit(it) }
-  }
+  return this.findAll().asFlow()
 }
