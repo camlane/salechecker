@@ -26,6 +26,7 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import org.springframework.http.HttpStatus.OK
+import org.springframework.http.ResponseEntity
 import reactor.core.publisher.Flux
 import java.math.BigDecimal.ONE
 import java.math.BigDecimal.TEN
@@ -52,7 +53,7 @@ internal class SiteItemCheckServiceTest {
   @BeforeEach
   fun setUp() {
     every { siteItemRepository.findAll() } returns SITES
-    coEvery { httpClient.get(URL) } returns SITE_HTML
+    coEvery { httpClient.get(URL) } returns ResponseEntity.ok(SITE_HTML)
   }
 
   @Test

@@ -14,7 +14,7 @@ class PriceParserTest {
 
     val text = "XXX.XX"
 
-    assertFailsWith<InvalidPriceTextException> { priceParser.parse(text) }
+    assertFailsWith<NumberFormatException> { priceParser.parse(text) }
   }
 
   @Test

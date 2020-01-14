@@ -11,17 +11,18 @@ import java.time.LocalDateTime
 
 @Document("scanResults")
 data class ScanResult(
-    val scanPrice: BigDecimal?,
+    val scanPrice: BigDecimal? = null,
     val httpStatus: HttpStatus,
     val scanStatus: ScanStatus = None,
     @DBRef val siteItem: SiteItem,
     @CreatedDate val createdDate: LocalDateTime = LocalDateTime.now(),
-    @Id val id: String? = null) {
+    @Id val id: String? = null
+) {
 
-  enum class ScanStatus {
-    None,
-    ElementFound,
-    ElementNotFound,
-    InvalidPrice
-  }
+    enum class ScanStatus {
+        None,
+        ElementFound,
+        ElementNotFound,
+        InvalidPrice
+    }
 }

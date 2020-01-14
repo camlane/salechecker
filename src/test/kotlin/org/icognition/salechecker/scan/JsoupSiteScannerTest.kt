@@ -18,96 +18,92 @@ import java.math.BigDecimal.ONE
 @ExtendWith(MockKExtension::class)
 class JsoupSiteScannerTest {
 
-  @MockK
-  lateinit var priceParser: PriceParser
+    @MockK
+    lateinit var priceParser: PriceParser
 
-  @InjectMockKs
-  lateinit var siteScanner: JsoupSiteScanner
+    @InjectMockKs
+    lateinit var siteScanner: JsoupSiteScanner
 
-  @Test
-  fun `when selector does not find a match then scan status is ElementNotFound`() {
+    @Test
+    fun `scan status is ElementNotFound when selector does not find a match`() {
 
-    val siteDocument = getSiteDocument("body > xxx", getHtml("100.00"))
+        val siteDocument = getSiteDocument(getHtml("100.00"), "body > xxx")
 
-    val result = siteScanner.scanSite(siteDocument)
-    result.scanStatus.shouldBe(ElementNotFound)
-  }
+        val result = siteScanner.scanSite(siteDocument)
+        result.scanStatus.shouldBe(ElementNotFound)
+    }
 
-  @Test
-  fun `when price element found then scan status is ElementNotFound`() {
+    @Test
+    fun `scan status is ElementFound when price element found`() {
 
-    every { priceParser.parse("100.00") } returns BigDecimal("100.00")
+        every { priceParser.parse("100.00") } returns BigDecimal("100.00")
 
-    val siteDocument = getSiteDocument("body > price", getHtml("100.00"))
+        val siteDocument = getSiteDocument(getHtml("100.00"))
+        val result = siteScanner.scanSite(siteDocument)
+        result.scanStatus.shouldBe(ElementFound)
+    }
 
-    val result = siteScanner.scanSite(siteDocument)
-    result.scanStatus.shouldBe(ElementFound)
-  }
+    @Test
+    fun `prices is correct when price element found`() {
 
-  @Test
-  fun `when price element is found then price matches`() {
+        every { priceParser.parse("123.45") } returns BigDecimal("123.45")
 
-    every { priceParser.parse("123.45") } returns BigDecimal("123.45")
+        val siteDocument = getSiteDocument(getHtml("123.45"))
+        val result = siteScanner.scanSite(siteDocument)
+        result.scanPrice.shouldBe(BigDecimal("123.45"))
+    }
 
-    val siteDocument = getSiteDocument("body > price", getHtml("123.45"))
+    @Test
+    fun `prices is correct when price element contains pound symbol`() {
 
-    val result = siteScanner.scanSite(siteDocument)
-    result.scanPrice.shouldBe(BigDecimal("123.45"))
-  }
+        every { priceParser.parse("£123.45") } returns BigDecimal("123.45")
 
-  @Test
-  fun `when price element contains pound symbol then scan price is correct`() {
+        val siteDocument = getSiteDocument(getHtml("£123.45"))
+        val result = siteScanner.scanSite(siteDocument)
+        result.scanPrice.shouldBe(BigDecimal("123.45"))
+    }
 
-    every { priceParser.parse("£123.45") } returns BigDecimal("123.45")
+    @Test
+    fun `price is correct when price element contains currency`() {
 
-    val siteDocument = getSiteDocument("body > price", getHtml("£123.45"))
+        val siteDocument = getSiteDocument(getHtml("GBP 123.45"))
+        every { priceParser.parse("GBP 123.45") } returns BigDecimal("123.45")
 
-    val result = siteScanner.scanSite(siteDocument)
-    result.scanPrice.shouldBe(BigDecimal("123.45"))
-  }
+        val result = siteScanner.scanSite(siteDocument)
+        result.scanPrice.shouldBe(BigDecimal("123.45"))
+    }
 
-  @Test
-  fun `when price element contains currency then scan price is correct`() {
+    @Test
+    fun `scan status is ElementNotFound when price element is empty`() {
 
-    val siteDocument = getSiteDocument("body > price", getHtml("GBP 123.45"))
+        val siteDocument = getSiteDocument(getHtml(""))
+        val result = siteScanner.scanSite(siteDocument)
+        result.scanStatus.shouldBe(ElementNotFound)
+    }
 
-    every { priceParser.parse("GBP 123.45") } returns BigDecimal("123.45")
+    @Test
+    fun `scan status is InvalidPrice when price element is not valid`() {
 
-    val result = siteScanner.scanSite(siteDocument)
-    result.scanPrice.shouldBe(BigDecimal("123.45"))
-  }
+        every {
+            priceParser.parse("XXX")
+        } throws NumberFormatException("Error parsing price")
 
-  @Test
-  fun `when price element is empty then scan status is ElementNotFound`() {
+        val siteDocument = getSiteDocument(getHtml("XXX"))
+        val result = siteScanner.scanSite(siteDocument)
+        result.scanStatus.shouldBe(InvalidPrice)
+    }
 
-    val siteDocument = getSiteDocument("body > price", getHtml(""))
+    private fun getHtml(price: String): String = "<html><body>" +
+        "<price product_id=\"123456\">$price</price>" +
+        "</body></html>"
 
-    val result = siteScanner.scanSite(siteDocument)
-    result.scanStatus.shouldBe(ElementNotFound)
-  }
-
-  @Test
-  fun `when element price is not valid then scan status is InvalidPrice`() {
-
-    every {
-      priceParser.parse("XXX")
-    } throws InvalidPriceTextException(NumberFormatException("Error parsing price"))
-
-    val siteDocument = getSiteDocument("body > price", getHtml("XXX"))
-
-    val result = siteScanner.scanSite(siteDocument)
-    result.scanStatus.shouldBe(InvalidPrice)
-  }
-
-  private fun getHtml(price: String): String = "<html><body>" +
-      "<price product_id=\"123456\">$price</price>" +
-      "</body></html>"
-
-  private fun getSiteDocument(cssSelector: String, siteHtml: String): SiteDocument {
-    val product = Product("Nike Air Max")
-    val site = Site("ASOS", cssSelector)
-    val siteItem = SiteItem("asos.com?pid=1", ONE, product, site)
-    return SiteDocument(siteItem, siteHtml)
-  }
-
+    private fun getSiteDocument(
+        siteHtml: String,
+        cssSelector: String = "body > price"
+    ): SiteDocument {
+        val product = Product("Nike Air Max")
+        val site = Site("ASOS", cssSelector)
+        val siteItem = SiteItem("asos.com?pid=1", ONE, product, site)
+        return SiteDocument(siteItem, siteHtml)
+    }
 }

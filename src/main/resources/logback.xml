@@ -11,11 +11,11 @@
     </appender>
 
     <logger name="org.springframework" level="info"/>
+    <logger name="org.springframework.data" level="error"/>
     <logger name="org.springframework.data.mongodb" level="error"/>
     <logger name="org.mongodb" level="warn"/>
     <logger name="org.jsoup" level="info"/>
     <logger name="reactor" level="info"/>
-    <logger name="org.springframework.web.reactive.function.client.ExchangeFunctions" level="trace"/>
 
     <root level="info">
         <appender-ref ref="CONSOLE"/>

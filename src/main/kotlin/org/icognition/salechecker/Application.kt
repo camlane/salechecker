@@ -1,39 +1,39 @@
 package org.icognition.salechecker
 
-import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.FlowPreview
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
+import de.flapdoodle.embed.mongo.distribution.Version.Main.PRODUCTION
+import kotlinx.coroutines.runBlocking
 import org.icognition.salechecker.service.SiteCheckService
-import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.boot.CommandLineRunner
-import org.springframework.boot.SpringApplication
-import org.springframework.boot.autoconfigure.SpringBootApplication
-import org.springframework.data.mongodb.config.EnableMongoAuditing
-import org.springframework.scheduling.annotation.EnableScheduling
+import org.springframework.boot.WebApplicationType.NONE
+import org.springframework.boot.context.event.ApplicationReadyEvent
+import org.springframework.fu.kofu.application
+import org.springframework.fu.kofu.configuration
+import org.springframework.fu.kofu.mongo.reactiveMongodb
 
-@ExperimentalCoroutinesApi
-@FlowPreview
-@EnableMongoAuditing
-@EnableScheduling
-@SpringBootApplication
-class Application : CommandLineRunner {
+//@EnableMongoAuditing
+//@EnableScheduling
 
-  @Autowired
-  lateinit var siteCheckService: SiteCheckService
-
-  override fun run(args: Array<String>) {
-    GlobalScope.launch {
-      siteCheckService.checkSites()
+val dataConfig = configuration {
+  beans {
+    bean<DataInitialiser>()
+    bean<SiteCheckService>()
+  }
+  listener<ApplicationReadyEvent> {
+    runBlocking {
+      ref<DataInitialiser>().initialise()
+      ref<SiteCheckService>().checkSites()
     }
   }
-
-  companion object {
-
-    @JvmStatic
-    fun main(args: Array<String>) {
-      SpringApplication.run(Application::class.java, *args)
+  reactiveMongodb {
+    embedded {
+      version = PRODUCTION
     }
   }
+}
 
+val app = application(NONE) {
+  enable(dataConfig)
+}
+
+fun main() {
+  app.run()
 }
